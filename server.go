@@ -3,17 +3,25 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/unrolled/secure"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	port := os.Getenv("PORT")
+	isDev := os.Getenv("ISDEV") == "1"
 	secureMiddleware := secure.New(secure.Options{
 		ReferrerPolicy: "same-origin",
 		AllowedHosts:   []string{"blog.howlingmoon.dev", "howlingmoon.dev"},
-		IsDevelopment:  true,
+		IsDevelopment:  isDev,
 	})
 	router := mux.NewRouter()
 	router.Use(secureMiddleware.Handler)
@@ -26,8 +34,8 @@ func main() {
 	fileServer := http.FileServer(neuteredFileSystem{http.Dir("./public/")})
 	router.HandleFunc("/", index).Methods("GET")
 	router.PathPrefix("/").Handler(http.StripPrefix("/", fileServer))
-	log.Println("Server started at port 8080")
-	http.ListenAndServe(":8080", router)
+	log.Println("Server started at port " + port)
+	http.ListenAndServe(":"+port, router)
 }
 
 type neuteredFileSystem struct {
