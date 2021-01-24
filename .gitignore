@@ -1,0 +1,6 @@
+static
+public
+bin
+/go-server
+/go-server.exe
+.env
