@@ -26,7 +26,7 @@ func main() {
 	router := mux.NewRouter()
 	router.Use(secureMiddleware.Handler)
 	router.Use(routeLogMiddleware)
-	router.Handle("/api/ls", authMiddleware(http.HandlerFunc(fileListHandler)))
+	router.Handle("/api/list", authMiddleware(http.HandlerFunc(fileListHandler)))
 	router.Handle("/api/tree", authMiddleware(http.HandlerFunc(fileTreeHandler)))
 	router.Handle("/upload", authMiddleware(routeLogMiddleware(http.HandlerFunc(uploadHandler)))).Methods("POST")
 

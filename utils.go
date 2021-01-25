@@ -7,7 +7,9 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/h2non/bimg"
@@ -98,4 +100,15 @@ func compareTime(a time.Time, b time.Time) int {
 func setJSONHeader(w http.ResponseWriter) http.ResponseWriter {
 	w.Header().Set("Content-Type", "application/json")
 	return w
+}
+
+func parseDirQuery(q url.Values) (bool, int, int) {
+	month := q.Get("month")
+	day := q.Get("day")
+	intMonth, err := strconv.Atoi(month)
+	intDay, err2 := strconv.Atoi(day)
+	if err != nil || err2 != nil {
+		return false, 0, 0
+	}
+	return true, intMonth, intDay
 }

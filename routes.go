@@ -134,7 +134,22 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func fileListHandler(w http.ResponseWriter, r *http.Request) {
-	files, err := ioutil.ReadDir(filepath.Join("./", "public", "blog"))
+	query := r.URL.Query()
+	isValid, month, day := parseDirQuery(query)
+	if !isValid {
+		res := Message{
+			Status:  "failed",
+			Message: "Invalid request",
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("content-type", "application/json")
+		json.NewEncoder(w).Encode(res)
+		return
+	}
+	year, _, _ := time.Now().Date()
+	imgDirName := fmt.Sprintf("%d-%d-%d", year, month, day)
+	log.Println(imgDirName)
+	files, err := ioutil.ReadDir(filepath.Join("./", "public", "blog", imgDirName))
 	if err != nil {
 		res := Message{
 			Status:  "failed",
@@ -148,8 +163,9 @@ func fileListHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	var dirNameArr []string
 	for file := range files {
-		if files[file].IsDir() {
-			dirName := "blog/" + files[file].Name()
+		log.Println(files[file].Name())
+		if !files[file].IsDir() {
+			dirName := fmt.Sprintf("public/blog/%s/%s", imgDirName, files[file].Name())
 			dirNameArr = append(dirNameArr, dirName)
 		}
 	}
@@ -158,8 +174,8 @@ func fileListHandler(w http.ResponseWriter, r *http.Request) {
 		Status: "success",
 		Data:   dirNameArr,
 	}
-	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(res)
 }
 
